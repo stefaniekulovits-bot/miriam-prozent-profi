@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Prozent-Profi – Miriam</title>
+<style>
+:root{
+  --bg1:#eef2ff; --bg2:#fdf2f8; --card:#ffffff; --text:#172033;
+  --muted:#6b7280; --accent:#635bff; --accent2:#8b5cf6;
+  --good:#16a34a; --bad:#dc2626; --line:#e5e7eb;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text); background:linear-gradient(145deg,var(--bg1),var(--bg2));
+}
+.app{max-width:520px;margin:0 auto;min-height:100vh;padding:14px 14px 28px}
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px
+}
+.brand{font-weight:900;font-size:20px;letter-spacing:-.4px}
+.level{font-size:12px;font-weight:800;background:#fff;padding:7px 10px;border-radius:999px;box-shadow:0 3px 12px #0000000c}
+.stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px
+}
+.stat{
+  background:#ffffffd9;border:1px solid #ffffff;border-radius:16px;padding:10px 8px;
+  box-shadow:0 5px 18px #27315b12;text-align:center
+}
+.stat b{display:block;font-size:17px}.stat span{font-size:10px;color:var(--muted);font-weight:700}
+.progress-wrap{height:8px;background:#ffffffaa;border-radius:99px;overflow:hidden;margin:5px 2px 15px}
+.progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .35s}
+.card{
+  background:var(--card);border-radius:26px;padding:22px 18px;
+  box-shadow:0 14px 38px #28345a18;border:1px solid #ffffff;
+}
+.tag{
+  display:inline-block;padding:6px 9px;border-radius:999px;background:#f0efff;color:#5047d6;
+  font-size:11px;font-weight:900;margin-bottom:10px
+}
+.question{font-size:23px;line-height:1.25;font-weight:850;letter-spacing:-.4px;margin:4px 0 18px}
+.sub{color:var(--muted);font-size:13px;margin-top:-10px;margin-bottom:15px}
+.options{display:grid;gap:10px}
+button,input{
+  font:inherit
+}
+.answer{
+  width:100%;border:2px solid var(--line);background:#fff;border-radius:16px;padding:14px 13px;
+  text-align:left;font-size:16px;font-weight:750;color:var(--text);cursor:pointer;transition:.15s;
+}
+.answer:hover{transform:translateY(-1px);border-color:#b9b6ff;background:#fafaff}
+.answer:active{transform:scale(.99)}
+.answer.correct{border-color:#86efac;background:#f0fdf4;color:#166534}
+.answer.wrong{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+.input-row{display:flex;gap:9px}
+.num{
+  flex:1;min-width:0;border:2px solid var(--line);border-radius:16px;padding:14px;font-size:19px;font-weight:800;
+  outline:none
+}
+.num:focus{border-color:#9a94ff}
+.primary{
+  border:0;border-radius:16px;padding:14px 17px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-weight:900;cursor:pointer;box-shadow:0 8px 18px #635bff35
+}
+.feedback{
+  margin-top:14px;border-radius:16px;padding:13px;font-size:14px;line-height:1.45;display:none
+}
+.feedback.show{display:block}.feedback.good{background:#f0fdf4;color:#166534}.feedback.bad{background:#fff7ed;color:#9a3412}
+.next{
+  display:none;width:100%;margin-top:11px;border:0;border-radius:16px;padding:13px;background:#172033;color:#fff;font-weight:900;cursor:pointer
+}
+.next.show{display:block}
+.explain{
+  margin-top:10px;padding:12px;border-radius:14px;background:#f8fafc;color:#374151;font-size:13px
+}
+.boss{
+  background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid #fde68a
+}
+.center{text-align:center}
+.big{font-size:42px;margin:4px 0 6px}
+.small{font-size:13px;color:var(--muted)}
+.hidden{display:none!important}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:9px;height:14px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.2}}
+.pop{animation:pop .35s ease}
+@keyframes pop{50%{transform:scale(1.03)}}
+.shake{animation:shake .35s ease}
+@keyframes shake{25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+.footer{text-align:center;color:#7b8190;font-size:10px;margin-top:14px}
+@media (max-width:380px){.question{font-size:20px}.card{padding:18px 14px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">📊 Prozent-Profi</div>
+    <div class="level" id="level">Level 1</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="hearts">❤️❤️❤️</b><span>LEBEN</span></div>
+    <div class="stat"><b id="xp">0</b><span>XP</span></div>
+    <div class="stat"><b id="streak">0 🔥</b><span>STREAK</span></div>
+  </div>
+  <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+  <div id="modeHint" style="text-align:center;font-size:11px;font-weight:800;color:#6b7280;margin:-7px 0 12px">
+    💡 Bei Unsicherheit: Tipp-Button nutzen · Schwierige Aufgaben werden wiederholt
+  </div>
+
+  <main id="game"></main>
+  <div class="footer">Miriams Prozent-Training · 3. Gymnasium</div>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+const bank = [
+  // Erkennen / Zuordnen
+  {type:"mc", level:1, tag:"G · A · p%", q:"80 % von 650 Schüler:innen einer Schule besitzen mindestens ein Haustier. Was ist der Grundwert G?", opts:["80","650","520","20"], ans:1, hint:"Der Grundwert ist immer das Ganze."},
+  {type:"mc", level:1, tag:"G · A · p%", q:"17 von 25 Kindern benutzen den öffentlichen Verkehr. Was ist der Prozentanteil A?", opts:["17","25","68","0,68"], ans:0, hint:"Der Anteil ist die konkrete Anzahl aus dem Ganzen."},
+  {type:"mc", level:1, tag:"G · A · p%", q:"17 von 25 Kindern benutzen den öffentlichen Verkehr. Welcher Prozentsatz p% gehört dazu?", opts:["17 %","25 %","68 %","42 %"], ans:2, hint:"Gesucht ist: Anteil ÷ Grundwert × 100."},
+  {type:"mc", level:1, tag:"G · A · p%", q:"Der Preis für das Mittagessen wurde um 1 € erhöht. Das entspricht einer Erhöhung um 12,5 %. Was ist der Prozentsatz?", opts:["1 %","12,5 %","87,5 %","112,5 %"], ans:1, hint:"Der Prozentsatz beschreibt die relative Veränderung."},
+  {type:"mc", level:1, tag:"G · A · p%", q:"51,3 % aller Neugeborenen in Österreich sind Buben. Was ist hier der Grundwert G?", opts:["51,3","die Anzahl aller Neugeborenen","die Anzahl der Buben","100"], ans:1, hint:"Der Grundwert ist das gesamte Ganze."},
+
+  // Rechnen W
+  {type:"num", level:1, tag:"Prozentwert W", q:"Berechne: 25 % von 160.", ans:40, unit:"", explain:"25 % = 0,25 → 160 · 0,25 = 40."},
+  {type:"num", level:1, tag:"Prozentwert W", q:"Berechne: 30 % von 90.", ans:27, unit:"", explain:"30 % = 0,30 → 90 · 0,30 = 27."},
+  {type:"num", level:1, tag:"Prozentwert W", q:"Berechne: 12,5 % von 80.", ans:10, unit:"", explain:"12,5 % = 0,125 → 80 · 0,125 = 10."},
+
+  // Grundwert G
+  {type:"num", level:1, tag:"Grundwert G", q:"24 sind 4 % von wie viel?", ans:600, unit:"", explain:"G = W ÷ p · 100 → 24 ÷ 4 · 100 = 600."},
+  {type:"num", level:2, tag:"Grundwert G", q:"18 sind 6 % von wie viel?", ans:300, unit:"", explain:"G = W ÷ p · 100 → 18 ÷ 6 · 100 = 300."},
+  {type:"num", level:2, tag:"Grundwert G", q:"45 sind 15 % von wie viel?", ans:300, unit:"", explain:"G = 45 ÷ 15 · 100 = 300."},
+
+  // Prozentsatz
+  {type:"num", level:1, tag:"Prozentsatz p%", q:"12 von 20 sind wie viel Prozent?", ans:60, unit:"%", explain:"p = A ÷ G · 100 → 12 ÷ 20 · 100 = 60 %."},
+  {type:"num", level:2, tag:"Prozentsatz p%", q:"18 von 30 sind wie viel Prozent?", ans:60, unit:"%", explain:"p = A ÷ G · 100 → 18 ÷ 30 · 100 = 60 %."},
+  {type:"num", level:2, tag:"Prozentsatz p%", q:"21 von 28 sind wie viel Prozent?", ans:75, unit:"%", explain:"p = A ÷ G · 100 → 21 ÷ 28 · 100 = 75 %."},
+
+  // Steigerungen
+  {type:"mc", level:2, tag:"Preiserhöhung", q:"Ein Preis steigt um 20 %. Mit welchem Faktor kannst du den neuen Preis berechnen?", opts:["0,20","0,80","1,20","1,80"], ans:2, hint:"100 % + 20 % = 120 % = 1,20."},
+  {type:"mc", level:2, tag:"Preiserhöhung", q:"Ein Preis steigt um 8 %. Auf wie viel Prozent des alten Preises steigt er?", opts:["8 %","92 %","100 %","108 %"], ans:3, hint:"100 % + 8 % = 108 %."},
+  {type:"num", level:2, tag:"Preiserhöhung", q:"135 € werden um 20 % erhöht. Wie hoch ist der neue Preis?", ans:162, unit:" €", explain:"135 · 1,20 = 162 €."},
+
+  // Senkungen
+  {type:"mc", level:2, tag:"Preissenkung", q:"Ein Preis wird um 8 % gesenkt. Auf wie viel Prozent des alten Preises sinkt er?", opts:["8 %","92 %","100 %","108 %"], ans:1, hint:"100 % − 8 % = 92 %."},
+  {type:"num", level:2, tag:"Preissenkung", q:"85 € werden um 8 % gesenkt. Wie viel kostet der Artikel danach?", ans:78.2, unit:" €", tolerance:0.01, explain:"85 · 0,92 = 78,20 €."},
+  {type:"num", level:2, tag:"Preissenkung", q:"280 € werden um 5 % gesenkt. Wie viel kostet der Artikel danach?", ans:266, unit:" €", explain:"280 · 0,95 = 266 €."},
+
+  // Rückwärts
+  {type:"num", level:3, tag:"Rückwärts rechnen", q:"Ein Rucksack kostet nach einer Ermäßigung von 20 % noch 60 €. Wie teuer war er vorher?", ans:75, unit:" €", explain:"Nach 20 % Rabatt bleiben 80 % übrig: 60 ÷ 0,80 = 75 €."},
+  {type:"num", level:3, tag:"Rückwärts rechnen", q:"Ein Artikel kostet nach 25 % Rabatt noch 90 €. Wie teuer war er vorher?", ans:120, unit:" €", explain:"Nach 25 % Rabatt bleiben 75 % übrig: 90 ÷ 0,75 = 120 €."},
+
+  // Mehrere Rabatte
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Mehrere Schritte", q:"Ein Rucksack kostet 240 €. Zuerst wird der Preis um 15 % erhöht. Danach gibt es 20 % Rabatt. Wie viel kostet der Rucksack am Ende?", ans:220.8, unit:" €", tolerance:0.01, explain:"Zuerst 240 · 1,15 = 276 €. Danach 276 · 0,80 = 220,80 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Mehrere Schritte", q:"Ein Fahrrad kostet 480 €. Der Preis steigt zuerst um 10 % und wird anschließend um 15 % gesenkt. Wie hoch ist der Endpreis?", ans:448.8, unit:" €", tolerance:0.01, explain:"480 · 1,10 = 528 €. Danach 528 · 0,85 = 448,80 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Rückwärts", q:"Ein Pullover kostet nach einer Ermäßigung von 30 % noch 56 €. Wie viel hat er vor der Ermäßigung gekostet?", ans:80, unit:" €", explain:"Nach 30 % Rabatt bleiben 70 % übrig. 56 ÷ 0,70 = 80 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Rückwärts", q:"Nach einer Preiserhöhung von 25 % kostet ein Fahrrad 750 €. Wie viel kostete es vorher?", ans:600, unit:" €", explain:"Nach der Erhöhung entsprechen 750 € genau 125 %. 750 ÷ 1,25 = 600 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Gesamtänderung", q:"Ein Handy kostet 800 €. Zuerst gibt es 20 % Rabatt, danach nochmals 15 % Rabatt. Wie hoch ist der Endpreis?", ans:544, unit:" €", explain:"800 · 0,80 = 640 €. Danach 640 · 0,85 = 544 €. Die gesamte Ermäßigung beträgt nicht 35 %."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Gesamtänderung", q:"Ein Artikel kostet 500 €. Er wird zuerst um 20 % und danach um 10 % reduziert. Um wie viel Prozent wurde der ursprüngliche Preis insgesamt reduziert? Gib nur die Zahl ein.", ans:28, unit:" %", explain:"500 · 0,80 · 0,90 = 360 €. Es bleiben 72 % übrig → insgesamt 28 % Ermäßigung."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Fehlerfalle", q:"Ein Preis von 400 € wird zuerst um 20 % und danach nochmals um 10 % gesenkt. Wie hoch ist der richtige Endpreis?", ans:288, unit:" €", explain:"400 · 0,80 = 320 €. Danach 320 · 0,90 = 288 €. Nicht einfach 30 % von 400 rechnen."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Sachaufgabe", q:"In einer Schule sind 600 Schüler:innen. 35 % fahren mit dem Fahrrad. Von diesen Fahrradfahrer:innen fahren 20 % mit einem E-Bike. Wie viele Schüler:innen fahren mit einem E-Bike?", ans:42, unit:" Schüler:innen", explain:"Zuerst 600 · 0,35 = 210 Fahrradfahrer:innen. Davon 210 · 0,20 = 42."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Sachaufgabe", q:"Ein Mantel kostet 160 €. Im Schlussverkauf wird er um 25 % reduziert. Danach werden an der Kassa nochmals 10 % vom bereits reduzierten Preis abgezogen. Wie viel muss man bezahlen?", ans:108, unit:" €", explain:"160 · 0,75 = 120 €. Danach 120 · 0,90 = 108 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Sachaufgabe", q:"Ein Preis wurde um 20 % gesenkt und beträgt jetzt 144 €. Wie hoch war der ursprüngliche Preis?", ans:180, unit:" €", explain:"Nach 20 % Rabatt bleiben 80 %. 144 ÷ 0,80 = 180 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Sachaufgabe", q:"Ein Preis steigt von 240 € auf 300 €. Um wie viel Prozent ist der Preis gestiegen?", ans:25, unit:" %", explain:"Zunahme: 300 − 240 = 60 €. Dann 60 ÷ 240 · 100 = 25 %."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Sachaufgabe", q:"Ein Preis sinkt von 250 € auf 200 €. Um wie viel Prozent ist der Preis gesunken?", ans:20, unit:" %", explain:"Abnahme: 250 − 200 = 50 €. Dann 50 ÷ 250 · 100 = 20 %."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Kombi", q:"Ein Laptop kostet 900 €. Er wird um 20 % reduziert. Danach wird der reduzierte Preis um 10 % erhöht. Wie hoch ist der neue Preis?", ans:792, unit:" €", explain:"900 · 0,80 = 720 €. Danach 720 · 1,10 = 792 €."},
+  {type:"num", level:3, tag:"📝 ZETTEL RAUS · Kombi", q:"Ein Artikel kostet nach einer Erhöhung um 20 % und anschließend einer Senkung um 20 % noch 480 €. Wie hoch war der ursprüngliche Preis?", ans:500, unit:" €", explain:"Nach beiden Änderungen bleiben 1,20 · 0,80 = 0,96 = 96 %. 480 ÷ 0,96 = 500 €."},
+  {type:"mc", level:3, tag:"Mehrfach-Ermäßigung", q:"Warum entsprechen 20 % Rabatt und danach 25 % Rabatt NICHT insgesamt 45 % Rabatt?", opts:["Weil Prozente nie addiert werden dürfen.","Weil die zweiten 25 % vom bereits verminderten Preis berechnet werden.","Weil 20 % eigentlich 0,20 % sind.","Weil der Grundwert immer gleich bleibt."], ans:1, hint:"Die zweite Ermäßigung bezieht sich nicht mehr auf den ursprünglichen Preis."},
+  {type:"mc", level:3, tag:"Mehrfach-Ermäßigung", q:"20 % Rabatt und danach 25 % Rabatt entsprechen insgesamt welcher Ermäßigung?", opts:["45 %","40 %","38 %","35 %"], ans:1, hint:"80 % bleiben nach dem ersten Rabatt. Davon bleiben nach weiteren 25 % noch 75 % übrig: 0,80 · 0,75 = 0,60."},
+  {type:"mc", level:3, tag:"📝 ZETTEL RAUS · Begründung", q:"Ein Preis wird zuerst um 20 % erhöht und danach um 20 % gesenkt. Ist der Endpreis wieder gleich hoch wie am Anfang?", opts:["Ja, immer.","Nein, weil die 20 % Erhöhung und die 20 % Senkung auf unterschiedliche Grundwerte angewendet werden.","Ja, weil +20 % und −20 % sich aufheben.","Nein, weil Prozentrechnung keine Faktoren verwendet."], ans:1, hint:"Nach +20 % wird mit 1,20 multipliziert. Danach wird der neue Preis mit 0,80 multipliziert: 1,20 · 0,80 = 0,96."},
+  // Rechen-Boost: Dezimalzahlen und Faktoren
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 37 · 0,01", ans:0.37, tolerance:0.0001, explain:"Mit 0,01 multiplizieren bedeutet: durch 100 teilen. Das Komma wandert 2 Stellen nach links."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 4,8 · 100", ans:480, explain:"Mit 100 multiplizieren: Das Komma wandert 2 Stellen nach rechts."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 720 ÷ 100", ans:7.2, tolerance:0.0001, explain:"Durch 100 teilen: Das Komma wandert 2 Stellen nach links."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 0,56 · 100", ans:56, explain:"Mit 100 multiplizieren: Das Komma wandert 2 Stellen nach rechts."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 83 ÷ 100", ans:0.83, tolerance:0.0001, explain:"Durch 100 teilen: 83 → 0,83. Das Komma wandert 2 Stellen nach links."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 6,2 · 0,1", ans:0.62, tolerance:0.0001, explain:"Mit 0,1 multiplizieren bedeutet durch 10 teilen: 6,2 → 0,62."},
+  {type:"num", level:1, tag:"⚡ RECHEN-BOOST · Dezimalzahlen", q:"Berechne: 0,75 ÷ 0,01", ans:75, explain:"Durch 0,01 teilen bedeutet mit 100 multiplizieren: 0,75 → 75."},
+  {type:"mc", level:1, tag:"⚡ RECHEN-BOOST · Verständnis", q:"Was ist dasselbe wie mit 0,01 zu multiplizieren?", opts:["mit 10 multiplizieren","durch 10 teilen","mit 100 multiplizieren","durch 100 teilen"], ans:3, hint:"0,01 = 1/100. Deshalb bedeutet · 0,01 dasselbe wie ÷ 100."},
+  {type:"mc", level:1, tag:"⚡ RECHEN-BOOST · Verständnis", q:"Was ist dasselbe wie durch 0,01 zu dividieren?", opts:["durch 100 dividieren","mit 100 multiplizieren","mit 0,01 multiplizieren","durch 10 dividieren"], ans:1, hint:"0,01 = 1/100. Durch 1/100 teilen bedeutet mit 100 multiplizieren."},
+  {type:"mc", level:1, tag:"⚡ RECHEN-BOOST · Prozent", q:"Welche Zahl entspricht 12 % als Dezimalzahl?", opts:["1,2","0,12","0,012","12"], ans:1, hint:"Prozent bedeutet Hundertstel: 12 % = 12/100 = 0,12."},
+  {type:"mc", level:1, tag:"⚡ RECHEN-BOOST · Prozent", q:"Welche Zahl entspricht 0,35 als Prozentsatz?", opts:["3,5 %","35 %","0,35 %","350 %"], ans:1, hint:"Von der Dezimalzahl zur Prozentzahl: · 100. 0,35 · 100 = 35 %."},
+  {type:"num", level:2, tag:"⚡ RECHEN-BOOST · Prozent", q:"Berechne: 0,18 · 250", ans:45, explain:"0,18 entspricht 18 %. 250 · 0,18 = 45."},
+  {type:"num", level:2, tag:"⚡ RECHEN-BOOST · Prozent", q:"Berechne: 840 · 0,15", ans:126, explain:"840 · 0,15 = 126. Alternativ: 10 % + 5 % von 840 = 84 + 42."},
+  {type:"num", level:2, tag:"⚡ RECHEN-BOOST · Faktor", q:"Ein Preis von 250 € wird um 12 % erhöht. Berechne den neuen Preis.", ans:280, unit:" €", explain:"100 % + 12 % = 112 % = 1,12. 250 · 1,12 = 280 €."},
+  {type:"num", level:2, tag:"⚡ RECHEN-BOOST · Faktor", q:"Ein Preis von 350 € wird um 18 % gesenkt. Berechne den neuen Preis.", ans:287, unit:" €", explain:"100 % − 18 % = 82 % = 0,82. 350 · 0,82 = 287 €."}
+];
+
+let state = {
+  hearts:3, xp:0, streak:0, qCount:0, level:1, boss:false,
+  wrong:[], asked:[], current:null, answered:false
+};
+
+function shuffle(a){ return [...a].sort(()=>Math.random()-.5); }
+function heartsText(){ return "❤️".repeat(state.hearts) + "🖤".repeat(3-state.hearts); }
+function updateStats(){
+  document.getElementById("hearts").textContent=heartsText();
+  document.getElementById("xp").textContent=state.xp;
+  document.getElementById("streak").textContent=state.streak+" 🔥";
+  document.getElementById("level").textContent="Level "+state.level;
+  const total=10;
+  document.getElementById("progress").style.width=Math.min(100,(state.qCount%10)/10*100)+"%";
+}
+function levelFor(){
+  if(state.xp>=120) return 3;
+  if(state.xp>=50) return 2;
+  return 1;
+}
+function chooseQuestion(){
+  if(state.qCount>0 && state.qCount%10===0 && !state.boss){
+    startBoss(); return;
+  }
+  state.boss=false;
+  const eligible=bank.filter(q=>q.level<=state.level);
+  let pool=eligible.filter(q=>!state.asked.includes(q));
+  if(!pool.length){ state.asked=[]; pool=eligible; }
+  // Fehler-Wörter/Aufgabentypen kommen häufiger zurück.
+  const preferred=state.wrong.length ? pool.filter(q=>state.wrong.includes(bank.indexOf(q))) : [];
+  const decimalPool=pool.filter(q=>q.tag.includes("RECHEN-BOOST"));
+  const decimalPreferred=decimalPool.filter(q=>state.wrong.includes(bank.indexOf(q)));
+  const boostSource = decimalPreferred.length && Math.random()<0.65 ? decimalPreferred :
+                      (decimalPool.length && Math.random()<0.22 ? decimalPool : null);
+  const source=boostSource || ((preferred.length && Math.random()<0.55)?preferred:pool);
+  state.current=source[Math.floor(Math.random()*source.length)];
+  state.asked.push(bank.indexOf(state.current));
+  renderQuestion();
+}
+function startBoss(){
+  state.boss=true;
+  let pool=[];
+  if(state.wrong.length){
+    pool=state.wrong.map(i=>bank[i]).filter(Boolean).filter(q=>q.type!=="mc" || q.opts);
+  }
+  pool=shuffle(pool.length>=3?pool:bank.filter(q=>q.level<=3));
+  state.currentBoss=pool.slice(0,3);
+  state.bossIndex=0;
+  renderBossIntro();
+}
+function renderBossIntro(){
+  document.getElementById("game").innerHTML=`
+    <section class="card boss center pop">
+      <div class="big">🔥</div>
+      <h2>PROZENT-BOSS</h2>
+      <p>3 knifflige Aufgaben warten.<br>Schaffst du alle, gibt es <b>+50 XP</b> und ein Abzeichen!</p>
+      <button class="primary" onclick="nextBoss()">Boss starten</button>
+    </section>`;
+}
+function nextBoss(){
+  if(state.bossIndex>=3){ finishBoss(); return; }
+  state.current=state.currentBoss[state.bossIndex++];
+  renderQuestion(true);
+}
+function renderQuestion(isBoss=false){
+  const q=state.current; state.answered=false; state.hintStage=0;
+  const game=document.getElementById("game");
+  let body="";
+  if(q.type==="mc"){
+    body=`<div class="options">${shuffle(q.opts.map((t,i)=>({t,i}))).map(o=>`<button class="answer" onclick="answerMC(${o.i},this)">${o.t}</button>`).join("")}</div>`;
+  }else{
+    body=`<div class="input-row">
+      <input class="num" id="numInput" inputmode="decimal" autocomplete="off" placeholder="Deine Antwort">
+      <button class="primary" onclick="answerNum()">✓</button>
+    </div>`;
+  }
+  game.innerHTML=`
+    <section class="card ${isBoss?'boss':''}" id="card">
+      <div class="tag">${isBoss?'🔥 BOSS · ':''}${q.tag}</div>
+      <div class="question">${q.q}</div>
+      ${q.type==="num"?`<div class="sub">${q.level===3?'📝 <b>Zettel raus!</b> Rechne den vollständigen Rechenweg auf Papier. Danach trägst du nur dein Ergebnis ein.':'Tipp: Schreibe nur die Zahl. Dezimalzahl mit Komma oder Punkt möglich.'}</div>`:''}
+      ${body}
+      <button class="hintBtn" id="hintBtn" onclick="showHint()" style="margin-top:10px;width:100%;border:0;border-radius:14px;padding:11px;background:#f3f4ff;color:#5148c9;font-weight:850;cursor:pointer">💡 Ich brauche einen Tipp</button>
+      <div class="feedback" id="feedback"></div>
+      <button class="next" id="nextBtn" onclick="${isBoss?'nextBoss()':'chooseQuestion()'}">Weiter →</button>
+    </section>`;
+  if(q.type==="num"){
+    document.getElementById("numInput").addEventListener("keydown",e=>{if(e.key==="Enter")answerNum()});
+  }
+  updateStats();
+}
+function normalize(v){ return parseFloat(String(v).replace(",",".").replace("€","").replace("%","").trim()); }
+function lockButtons(){
+  document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+  const inp=document.getElementById("numInput"); if(inp) inp.disabled=true;
+}
+function markWrong(){
+  const idx=bank.indexOf(state.current);
+  if(idx>=0 && !state.wrong.includes(idx)) state.wrong.push(idx);
+}
+function success(msg){
+  state.xp+=10; state.streak++;
+  if(state.streak>0 && state.streak%3===0){ state.xp+=10; msg += " 🔥 +10 Streak-Bonus!"; }
+  state.qCount++;
+  state.level=levelFor();
+  const f=document.getElementById("feedback"); f.className="feedback show good"; f.innerHTML="✅ <b>Richtig!</b> "+msg;
+  document.getElementById("card").classList.add("pop");
+  document.getElementById("nextBtn").classList.add("show");
+  lockButtons(); updateStats();
+}
+function failure(extra){
+  state.hearts--; state.streak=0; markWrong();
+  const q=state.current;
+  const f=document.getElementById("feedback");
+  let solution = q.type==="mc" ? q.opts[q.ans] : String(q.ans).replace(".",",")+(q.unit||"");
+  let explain = q.explain || q.hint || "";
+  let learning = "";
+  if(q.tag.includes("Dezimalzahlen")){
+    learning = `<div class="explain">🧠 <b>Rechen-Merker:</b> · 100 → Komma 2 Stellen nach rechts. ÷ 100 → 2 Stellen nach links. · 0,01 ist dasselbe wie ÷ 100.</div>`;
+  } else if(q.tag.includes("Prozent")){
+    learning = `<div class="explain">🧠 <b>Prozent-Merker:</b> Prozent bedeutet „von 100“. 12 % = 0,12 und 0,12 = 12 %.</div>`;
+  }
+  f.className="feedback show bad";
+  f.innerHTML=`❌ <b>Noch nicht.</b><br>Richtige Lösung: <b>${solution}</b>
+    ${explain?`<div class="explain">💡 ${explain}</div>`:""}${learning}`;
+  document.getElementById("card").classList.add("shake");
+  document.getElementById("nextBtn").classList.add("show");
+  lockButtons(); updateStats();
+  if(state.hearts<=0){
+    setTimeout(gameOver,500);
+  }
+}
+function showHint(){
+  const q=state.current;
+  const f=document.getElementById("feedback");
+  if(!f) return;
+  const stage = state.hintStage || 0;
+  let text="";
+  if(stage===0){
+    text = q.type==="num"
+      ? "💡 Tipp 1: Überlege zuerst, was gesucht wird und welche Größe gegeben ist."
+      : "💡 Tipp 1: Lies die Aufgabe langsam und markiere im Kopf das Ganze, den Anteil und den Prozentsatz.";
+  } else if(stage===1){
+    if(q.tag.includes("Dezimalzahlen")){
+      text="💡 Tipp 2: Bei · 100 wandert das Komma 2 Stellen nach rechts. Bei ÷ 100 wandert es 2 Stellen nach links.";
+    } else if(q.tag.includes("Faktor")){
+      text="💡 Tipp 2: Bei einer Erhöhung wird aus 100 % z.B. 112 % → Faktor 1,12. Bei einer Senkung entsprechend kleiner als 1.";
+    } else if(q.level===3){
+      text="💡 Tipp 2: Zerlege die Aufgabe in einzelne Schritte. Schreibe jeden Zwischenschritt auf deinen Zettel.";
+    } else {
+      text="💡 Tipp 2: Schreibe zuerst auf, ob G, W/A oder p % gesucht ist. Danach wähle die passende Rechnung.";
+    }
+  } else {
+    if(q.type==="mc") text="💡 Tipp 3: Streiche zuerst die Antworten weg, die nicht zur Bedeutung der Aufgabe passen.";
+    else text="💡 Tipp 3: Rechne noch nicht im Kopf. Schreibe den Ansatz auf und prüfe anschließend, ob das Ergebnis ungefähr sinnvoll ist.";
+  }
+  f.className="feedback show";
+  f.innerHTML=text;
+  state.hintStage=Math.min(stage+1,2);
+  const b=document.getElementById("hintBtn");
+  if(b) b.textContent=state.hintStage<2 ? "💡 Noch ein Tipp" : "💡 Letzter Tipp";
+} 
+function answerMC(i,btn){
+  if(state.answered) return; state.answered=true;
+  const q=state.current;
+  if(i===q.ans){btn.classList.add("correct");success(q.hint||"Gut erkannt.");}
+  else {btn.classList.add("wrong"); failure();}
+}
+function answerNum(){
+  if(state.answered) return;
+  const input=document.getElementById("numInput");
+  const val=normalize(input.value);
+  if(Number.isNaN(val)){ input.focus(); return; }
+  state.answered=true;
+  const q=state.current;
+  const tol=q.tolerance||0.005;
+  if(Math.abs(val-q.ans)<=tol) success(q.explain||"Sauber gerechnet.");
+  else failure();
+}
+function finishBoss(){
+  state.xp+=50; state.boss=false; state.qCount=0; state.asked=[];
+  document.getElementById("game").innerHTML=`
+    <section class="card boss center pop">
+      <div class="big">🏆</div>
+      <h2>PROZENT-PROFI!</h2>
+      <p>Boss-Runde geschafft!</p>
+      <p><b>+50 XP</b> · Abzeichen verdient · Streak geschützt</p>
+      <button class="primary" onclick="chooseQuestion()">Nächste Runde →</button>
+    </section>`;
+  confetti(); updateStats();
+}
+function gameOver(){
+  document.getElementById("game").innerHTML=`
+    <section class="card center">
+      <div class="big">💪</div><h2>Neue Runde?</h2>
+      <p>Die schwierigen Aufgaben wurden gespeichert. Beim nächsten Versuch kommen sie gezielt wieder.</p>
+      <button class="primary" onclick="restart()">Nochmal spielen</button>
+    </section>`;
+}
+function restart(){
+  state.hearts=3; state.streak=0; state.asked=[]; state.qCount=0; state.boss=false;
+  document.getElementById("game").innerHTML="";
+  chooseQuestion();
+}
+function confetti(){
+  const c=document.getElementById("confetti"); c.innerHTML="";
+  for(let i=0;i<80;i++){
+    const x=document.createElement("i");
+    x.style.left=Math.random()*100+"%";
+    x.style.animationDelay=Math.random()*.8+"s";
+    x.style.transform=`rotate(${Math.random()*360}deg)`;
+    c.appendChild(x);
+  }
+  setTimeout(()=>c.innerHTML="",2500);
+}
+chooseQuestion();
+</script>
+</body>
+</html>
